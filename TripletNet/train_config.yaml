@@ -1,0 +1,10 @@
+exp_name: 'baseline_81'
+lr: 0.0001
+epochs: 1000
+batch_size: 32
+img_size: 64
+
+train_dir: '../data/train'
+val_dir: '../data/val'
+
+model_save_root: 'saved_models'
