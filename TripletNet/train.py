@@ -9,14 +9,14 @@ from torch.utils.tensorboard import SummaryWriter
 from data_loader import Triplet_Dataset
 from model import TripletNet
 
-parser = argparse.ArgumentParser(description='3dUnet Training')
-parser.add_argument('--config', default='train_config.yaml', type=str)
+# parser = argparse.ArgumentParser(description='3dUnet Training')
+# parser.add_argument('--config', default='train_config.yaml', type=str)
 
-# class Args():
-#     def __init__(self):
-#         self.config = 'train_config.yaml'
-#         self.model_path = 'saved_models/piecewise_test_temp.pt'
-# args = Args()
+class Args():
+    def __init__(self):
+        self.config = 'train_config.yaml'
+        self.model_path = 'saved_models/piecewise_test_temp.pt'
+args = Args()
 
 def run_epoch(model, optimizer, data_loader, epoch, data_type, device):
     loss_fn = torch.nn.TripletMarginLoss()
