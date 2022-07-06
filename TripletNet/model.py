@@ -21,5 +21,5 @@ class TripletNet(nn.Module):
         return anc_pred, pos_pred, neg_pred 
 
     def predict(self, img):
-        pred = self.sfmx(self.resnet(img))
+        pred = self.resnet(img)
         return pred
