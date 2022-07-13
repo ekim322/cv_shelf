@@ -6,7 +6,8 @@ from tqdm import tqdm
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-from data_loader import Triplet_Dataset
+from loss import TripletMiningLoss
+from data_loader import Triplet_Mining_Dataset
 from model import TripletNet
 
 # parser = argparse.ArgumentParser(description='3dUnet Training')
@@ -15,21 +16,19 @@ from model import TripletNet
 class Args():
     def __init__(self):
         self.config = 'train_config.yaml'
-        self.model_path = 'saved_models/piecewise_test_temp.pt'
 args = Args()
 
 def run_epoch(model, optimizer, data_loader, epoch, data_type, device):
-    loss_fn = torch.nn.TripletMarginLoss()
+    loss_fn = TripletMiningLoss()
     running_loss = 0
 
     data_loop = tqdm(enumerate(data_loader), total=len(data_loader), leave=False)
-    for i, data_dict in data_loop:
-        anc_img = data_dict["anc_img"].to(device)
-        pos_img = data_dict["pos_img"].to(device)
-        neg_img = data_dict["neg_img"].to(device)
+    for i, (imgs, labels) in data_loop:
+        imgs = imgs.to(device)
+        labels = labels.to(device)
         
-        anc_pred, pos_pred, neg_pred = model(anc_img, pos_img, neg_img)
-        loss = loss_fn(anc_pred, pos_pred, neg_pred)
+        preds = model(imgs)
+        loss = loss_fn(preds, labels)
         running_loss += loss.item()
 
         if data_type == "train":
@@ -52,7 +51,7 @@ def train_model(model, cfg, device):
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.Adam(params, cfg["lr"])
 
-    train_dataset = Triplet_Dataset(
+    train_dataset = Triplet_Mining_Dataset(
         img_dir=cfg["train_dir"],
         img_size=cfg["img_size"]
     )
@@ -63,7 +62,7 @@ def train_model(model, cfg, device):
         shuffle=True
     )
 
-    val_dataset = Triplet_Dataset(
+    val_dataset = Triplet_Mining_Dataset(
         img_dir=cfg["val_dir"],
         img_size=cfg["img_size"]
     )
@@ -90,6 +89,7 @@ def train_model(model, cfg, device):
 
         if val_loss < best_val_loss:
             torch.save(model.state_dict(), VAL_SAVE_PATH)
+            
 if __name__=='__main__':
     with open(args.config, 'r') as stream:
         try:
